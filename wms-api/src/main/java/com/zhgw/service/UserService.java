@@ -22,4 +22,12 @@ public interface UserService extends IService<User> {
      * 用户登录
      */
     LoginVO login(LoginDTO loginDTO);
+    
+    // 获取用户信息
+    User getUserInfo(Long userId);
+    
+    /**
+     * 更新用户个人信息
+     */
+    boolean updateProfile(User user);
 } 

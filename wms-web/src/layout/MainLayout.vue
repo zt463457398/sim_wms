@@ -10,7 +10,9 @@
           </span>
           <template #dropdown>
             <el-dropdown-menu>
-              <el-dropdown-item command="logout">退出登录</el-dropdown-item>
+              <el-dropdown-item command="profile">个人中心</el-dropdown-item>
+              <el-dropdown-item command="changePassword">修改密码</el-dropdown-item>
+              <el-dropdown-item divided command="logout">退出登录</el-dropdown-item>
             </el-dropdown-menu>
           </template>
         </el-dropdown>
@@ -42,14 +44,29 @@
 import { ArrowDown, HomeFilled } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
 import { useRouter } from 'vue-router'
+import { onMounted } from 'vue'
 
 const userStore = useUserStore()
 const router = useRouter()
 
+onMounted(async () => {
+  if (!userStore.userInfo) {
+    await userStore.fetchUserInfo()
+  }
+})
+
 const handleCommand = (command) => {
-  if (command === 'logout') {
-    userStore.logout()
-    router.push('/login')
+  switch (command) {
+    case 'profile':
+      router.push('/profile')
+      break
+    case 'changePassword':
+      router.push('/profile/password')
+      break
+    case 'logout':
+      userStore.logout()
+      router.push('/login')
+      break
   }
 }
 </script>
@@ -78,6 +95,9 @@ const handleCommand = (command) => {
         display: flex;
         align-items: center;
         gap: 4px;
+        &:hover {
+          opacity: 0.8;
+        }
       }
     }
   }

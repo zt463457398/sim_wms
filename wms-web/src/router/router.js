@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { ElMessage } from 'element-plus'
+import { setupRouteGuards } from './guards'
+import Layout from '@/layout/MainLayout.vue'
 
 const routes = [
   {
@@ -13,20 +14,38 @@ const routes = [
   },
   {
     path: '/',
-    name: 'Layout',
-    component: () => import('../layout/MainLayout.vue'),
-    meta: {
-      requiresAuth: true
-    },
+    component: Layout,
     redirect: '/dashboard',
     children: [
       {
         path: 'dashboard',
         name: 'Dashboard',
-        component: () => import('../views/dashboard/DashboardView.vue'),
-        meta: {
-          title: '首页',
-          requiresAuth: true
+        component: () => import('@/views/dashboard/DashboardView.vue'),
+        meta: { title: '首页', icon: 'dashboard' }
+      }
+    ]
+  },
+  {
+    path: '/profile',
+    component: Layout,
+    children: [
+      {
+        path: '',
+        name: 'Profile',
+        component: () => import('@/views/profile/UserProfile.vue'),
+        meta: { 
+          title: '个人中心', 
+          icon: 'user',
+          requiresAuth: true 
+        }
+      },
+      {
+        path: 'password',
+        name: 'ChangePassword',
+        component: () => import('@/views/profile/ChangePassword.vue'),
+        meta: { 
+          title: '修改密码',
+          requiresAuth: true 
         }
       }
     ]
@@ -38,26 +57,7 @@ const router = createRouter({
   routes
 })
 
-// 路由守卫
-router.beforeEach((to, from, next) => {
-  // 设置页面标题
-  document.title = to.meta.title ? `${to.meta.title} - WMS系统` : 'WMS系统'
-  
-  const token = localStorage.getItem('token')
-  if (to.meta.requiresAuth) {
-    if (!token) {
-      ElMessage.warning('请先登录')
-      next({ name: 'Login', query: { redirect: to.fullPath } })
-    } else {
-      next()
-    }
-  } else {
-    if (token && to.path === '/login') {
-      next('/')
-    } else {
-      next()
-    }
-  }
-})
+// 设置路由守卫
+setupRouteGuards(router)
 
 export default router 

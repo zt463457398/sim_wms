@@ -1,6 +1,7 @@
 package com.zhgw.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.zhgw.entity.User;
 import com.zhgw.mapper.UserMapper;
@@ -77,5 +78,30 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         String token = jwtUtil.generateToken(user.getId(), user.getUsername());
         loginVO.setToken(token);
         return loginVO;
+    }
+    
+    @Override
+    public User getUserInfo(Long userId) {
+        return this.getById(userId);
+    }
+    
+    @Override
+    public boolean updateProfile(User user) {
+        // 验证用户是否存在
+        User existUser = this.getById(user.getId());
+        if (existUser == null) {
+            throw new RuntimeException("用户不存在");
+        }
+        
+        // 使用UpdateWrapper确保只更新允许的字段
+        UpdateWrapper<User> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.eq("id", user.getId());
+        updateWrapper.set(user.getNickname() != null, "nickname", user.getNickname());
+        updateWrapper.set(user.getPhone() != null, "phone", user.getPhone());
+        updateWrapper.set(user.getEmail() != null, "email", user.getEmail());
+        updateWrapper.set(user.getGender() != null, "gender", user.getGender());
+        updateWrapper.set(user.getAvatar() != null, "avatar", user.getAvatar());
+        
+        return this.update(updateWrapper);
     }
 } 

@@ -1,11 +1,10 @@
 import { ref, reactive } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
-import { ElMessage } from 'element-plus'
+import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
+import { ElMessage } from 'element-plus'
 
 export function useLoginForm() {
   const router = useRouter()
-  const route = useRoute()
   const userStore = useUserStore()
   const loading = ref(false)
   const formRef = ref()
@@ -17,42 +16,42 @@ export function useLoginForm() {
 
   const rules = {
     username: [
-      { required: true, message: '请输入用户名', trigger: 'blur' },
-      { min: 3, max: 20, message: '用户名长度应在3-20个字符之间', trigger: 'blur' }
+      { required: true, message: '请输入用户名', trigger: 'blur' }
     ],
     password: [
       { required: true, message: '请输入密码', trigger: 'blur' },
-      { min: 6, max: 20, message: '密码长度应在6-20个字符之间', trigger: 'blur' }
+      { min: 6, message: '密码长度不能小于6位', trigger: 'blur' }
     ]
   }
 
   const handleLogin = async () => {
     if (!formRef.value) return
-    await formRef.value.validate(async (valid) => {
-      if (valid) {
-        loading.value = true
-        try {
-          console.log('Login payload:', {
-            username: loginForm.username,
-            password: loginForm.password
-          })
-          await userStore.login(loginForm)
-          ElMessage.success('登录成功')
-          const redirect = route.query.redirect || '/'
-          router.push(redirect)
-        } catch (error) {
-          ElMessage.error(error.message || '登录失败')
-        } finally {
-          loading.value = false
-        }
-      }
-    })
+
+    try {
+      loading.value = true
+      await formRef.value.validate()
+      
+      await userStore.login({
+        username: loginForm.username,
+        password: loginForm.password
+      })
+
+      ElMessage.success('登录成功')
+      
+      // 获取重定向地址或默认跳转到首页
+      const redirect = router.currentRoute.value.query.redirect || '/'
+      router.push(redirect)
+    } catch (error) {
+      ElMessage.error(error.message || '登录失败')
+    } finally {
+      loading.value = false
+    }
   }
 
   return {
+    loginForm,
     loading,
     formRef,
-    loginForm,
     rules,
     handleLogin
   }

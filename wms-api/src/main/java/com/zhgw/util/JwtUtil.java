@@ -56,4 +56,30 @@ public class JwtUtil {
             return false;
         }
     }
+    
+    public static String getUserId(String token) {
+        try {
+            // 检查 token 是否为空
+            if (token == null || token.isEmpty()) {
+                throw new RuntimeException("Token不能为空");
+            }
+            
+            // 解析 token
+            Claims claims = Jwts.parserBuilder()
+                    .setSigningKey(SECRET_KEY)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+                    
+            // 获取并检查 userId
+            Object userId = claims.get("userId");
+            if (userId == null) {
+                throw new RuntimeException("Token中未包含用户ID");
+            }
+            
+            return String.valueOf(userId);
+        } catch (Exception e) {
+            throw new RuntimeException("Token解析失败: " + e.getMessage());
+        }
+    }
 } 
